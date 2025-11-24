@@ -1,0 +1,27 @@
+---
+- name: Base System Configuration
+  hosts: all
+  become: true
+  
+  roles:
+    - common
+    - base
+    - hardening
+
+  tasks:
+    - name: Update system packages
+      package:
+        name: '*'
+        state: latest
+      when: ansible_os_family == 'RedHat' or ansible_os_family == 'Debian'
+
+    - name: Install essential tools
+      package:
+        name:
+          - git
+          - curl
+          - wget
+          - vim
+          - tmux
+          - htop
+        state: present
