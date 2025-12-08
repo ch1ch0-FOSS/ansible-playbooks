@@ -1,0 +1,37 @@
+---
+# playbooks/service-management.yml - Service Lifecycle Management
+
+- name: Service Management
+  hosts: localhost
+  gather_facts: yes
+  tasks:
+
+    - name: Service status report
+      debug:
+        msg: |
+          Service Management Status
+          ✅ Connected to localhost
+          ✅ Ready for service checks
+      tags:
+        - info
+
+    - name: Check Forgejo service
+      systemd:
+        name: forgejo
+      register: forgejo_status
+      failed_when: false
+      changed_when: false
+      when: enable_forgejo | default(false)
+      tags:
+        - services
+
+    - name: Display services info
+      debug:
+        msg: |
+          Services Status:
+          • Forgejo (Git): {{ 'Enabled' if enable_forgejo | default(false) else 'Disabled' }}
+          • Vaultwarden (Vault): {{ 'Enabled' if enable_vaultwarden | default(false) else 'Disabled' }}
+          • Syncthing (Sync): {{ 'Enabled' if enable_syncthing | default(false) else 'Disabled' }}
+          • Tailscale (VPN): {{ 'Enabled' if enable_tailscale | default(false) else 'Disabled' }}
+      tags:
+        - info

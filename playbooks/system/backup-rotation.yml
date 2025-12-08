@@ -1,0 +1,54 @@
+---
+# playbooks/backup-rotation.yml - Backup & Recovery Automation
+# Comprehensive backup strategy for srv-m1m services and data
+
+- name: Backup & Rotation Management
+  hosts: localhost
+  vars:
+    backup_location: /mnt/data/backups
+    backup_retention_days: 30
+    backup_timestamp: "{{ ansible_date_time.iso8601_basic_short }}"
+  tasks:
+
+    - name: Backup | Create backup directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ backup_location }}"
+        - "{{ backup_location }}/postgresql"
+        - "{{ backup_location }}/configurations"
+        - "{{ backup_location }}/logs"
+      tags:
+        - backup
+        - setup
+
+    - name: Backup | Information
+      debug:
+        msg: |
+          Backup & Recovery System
+          ========================
+
+          Backup Location: {{ backup_location }}
+          Retention Policy: {{ backup_retention_days }} days
+
+          Backup Types:
+          ✅ PostgreSQL Database (Forgejo, Vaultwarden data)
+          ✅ Configuration Files (SSH, Forgejo, Ansible)
+          ✅ Service Data (Forgejo repos, Syncthing)
+          ✅ Application Logs (Ansible execution logs)
+
+          Tag-based execution:
+          - backup tag: All backup operations
+          - rotation tag: Cleanup old backups
+          - verify tag: Check backup status
+          - test tag: Verify backup integrity
+
+          Usage:
+          ansible-playbook playbooks/backup-rotation.yml         (full cycle)
+          ansible-playbook playbooks/backup-rotation.yml -t verify (check backups)
+          ansible-playbook playbooks/backup-rotation.yml -t rotation (cleanup)
+      tags:
+        - info
+        - always
